@@ -1,7 +1,7 @@
----
 
-```markdown
 # 💌 Chain Love Letter NFT Mint App
+
+---
 
 A romantic on-chain NFT minting interface where users can write love letters, generate themed cards, and mint them directly to Zora via a React + Flask full-stack application.
 
@@ -107,7 +107,3 @@ http://localhost:5000/
 Created by the On-chain Love Team
 Powered by: React · Vite · Flask · IPFS · Zora Protocol
 
-```
-
----
-```

@@ -6,12 +6,16 @@ import random
 
 def generate_love_image(text):
     # 图片和字体路径
-    index = random.randint(1, 13)
-    background_path = f"E:/AI/zora-loveletter/image/loveletter{index}.jpg"
-    font_path = "E:/AI/zora-loveletter/Great_Vibes/GreatVibes-Regular.ttf"
-    output_folder = "E:/AI/zora-loveletter/output"
-    os.makedirs(output_folder, exist_ok=True)
+    # 以当前文件（backend 目录）为起点，构建相对路径
+    BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
+    index = random.randint(1, 13)
+    background_path = os.path.join(BASE_DIR, "image", f"loveletter{index}.jpg")
+    font_path = os.path.join(BASE_DIR, "Great_Vibes", "GreatVibes-Regular.ttf")
+    output_folder = os.path.join(BASE_DIR, "output")
+
+    os.makedirs(output_folder, exist_ok=True)
+    
     # 缩放背景图
     original_img = Image.open(background_path).convert("RGBA")
     scale_factor = 1

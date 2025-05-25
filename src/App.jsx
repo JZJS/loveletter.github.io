@@ -1,5 +1,8 @@
 import { useState } from "react";
 import chainlove from "E:/AI/zora-loveletter/image/chainlove.png";
+import { createWalletClient, createPublicClient, custom, http } from 'viem';
+import { base } from 'viem/chains';
+import { createCoin } from '@zoralabs/coins-sdk';
 
 
 export default function App() {
@@ -43,14 +46,82 @@ export default function App() {
   };
 
 
-const handleMint = async () => {
-  try {
-    await mintNFT(); // 调用我们定义的链上 mint 函数
-  } catch (error) {
-    console.error("Mint NFT Error:", error);
-    alert("❌ Error minting NFT");
-  }
-};
+  const handleMint = async () => {
+    console.log("Mint button clicked");
+
+    try {
+      const providerList = window.ethereum?.providers || [window.ethereum];
+      const provider = providerList.find(p => p.isMetaMask) || providerList[0];
+
+      if (!provider) {
+        alert("No Ethereum provider found");
+        return;
+      }
+
+      // ✅ 检查链是否为 Base 主网，如果不是就切换
+      const baseChainId = '0x2105'; // 8453
+      const currentChainId = await provider.request({ method: 'eth_chainId' });
+      if (currentChainId !== baseChainId) {
+        try {
+          await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: baseChainId }],
+          });
+        } catch (switchError) {
+          if (switchError.code === 4902) {
+            await provider.request({
+              method: 'wallet_addEthereumChain',
+              params: [
+                {
+                  chainId: baseChainId,
+                  chainName: 'Base',
+                  nativeCurrency: { name: 'ETH', symbol: 'ETH', decimals: 18 },
+                  rpcUrls: ['https://mainnet.base.org'],
+                  blockExplorerUrls: ['https://basescan.org'],
+                },
+              ],
+            });
+          } else {
+            throw switchError;
+          }
+        }
+      }
+
+      const [address] = await provider.request({ method: 'eth_requestAccounts' }); // ✅ 获取用户地址
+
+      const walletClient = createWalletClient({
+        account: address,
+        chain: base,
+        transport: custom(provider),
+      });
+
+      const publicClient = createPublicClient({
+        chain: base,
+        transport: http("https://mainnet.base.org"),
+      });
+
+      const result = await createCoin(
+        {
+          name: 'Chain Love Coin',
+          symbol: 'LOVE',
+          //uri: 'https://bafybeibo6wwsmfc36rci22mu4psfizik3pabf7u34xnekycvpznvy273oy',
+          uri: 'https://gateway.lighthouse.storage/ipfs/bafkreietlntekiuys7qwfch2rafn3dfdu4cqbrjcbxwxh2b26haoojsuwe',
+          payoutRecipient: address,
+          platformReferrer: '0x0000000000000000000000000000000000000000',
+          initialPurchaseWei: 0n
+        },
+        walletClient,
+        publicClient
+      );
+
+      console.log('✅ Coin created:', result);
+      alert('✅ Coin Created!\nHash: ' + result.hash + '\nAddress: ' + result.address);
+    } catch (err) {
+      console.error('❌ Error creating coin:', err);
+      alert('❌ Failed: ' + (err.message || JSON.stringify(err)));
+    }
+  };
+
 
 
   return (
@@ -73,7 +144,7 @@ const handleMint = async () => {
           </div>
 
           <div>
-            <label className="block font-semibold text-lg mb-2">To</label>
+            <label className="block font-semibold text-lg mb-2">To (optional)</label>
             <input
               className="w-full p-4 text-lg border rounded-xl"
               value={to}
@@ -115,7 +186,7 @@ const handleMint = async () => {
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-2xl shadow-xl max-w-lg w-full text-center space-y-4">
               <h2 className="text-xl font-bold text-pink-700">Your Love Letter</h2>
-              <img src={`file://${generatedImage}`} alt="Generated Love Letter" className="mx-auto rounded-lg shadow" />
+              <img src={`http://localhost:5000${generatedImage}`} alt="Generated Love Letter" className="mx-auto rounded-lg shadow" />
               <div className="flex justify-center gap-4 mt-4">
                 <button
                   onClick={() => setShowModal(false)}
@@ -127,7 +198,7 @@ const handleMint = async () => {
                   onClick={handleMint}
                   className="bg-pink-500 text-white px-4 py-2 rounded-xl hover:bg-pink-600"
                 >
-                  Mint NFT
+                  Mint Coin
                 </button>
               </div>
             </div>

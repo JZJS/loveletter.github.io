@@ -4,6 +4,28 @@ import textwrap
 import datetime
 import random
 
+def wrap_text(draw, text, font, max_width):
+    words = text.split()
+    lines = []
+    current_line = ""
+
+    for word in words:
+        test_line = current_line + " " + word if current_line else word
+        bbox = draw.textbbox((0, 0), test_line, font=font)
+        line_width = bbox[2] - bbox[0]
+
+        if line_width <= max_width:
+            current_line = test_line
+        else:
+            lines.append(current_line)
+            current_line = word
+
+    if current_line:
+        lines.append(current_line)
+
+    return lines
+
+
 def generate_love_image(text):
     # 图片和字体路径
     # 以当前文件（backend 目录）为起点，构建相对路径
@@ -23,7 +45,7 @@ def generate_love_image(text):
     img = original_img.resize(new_size)
 
     # 设置字体
-    font_size = 300  # 缩放后的字体
+    font_size = 500  # 缩放后的字体
     font = ImageFont.truetype(font_path, font_size)
 
     # 创建透明图层用于绘制文字
@@ -31,10 +53,14 @@ def generate_love_image(text):
     draw = ImageDraw.Draw(txt_layer)
 
     # 自动换行
-    sample = "A" * 10
-    avg_char_width = (draw.textbbox((0, 0), sample, font=font)[2] - draw.textbbox((0, 0), sample, font=font)[0]) / 10
-    max_chars = int(img.width / avg_char_width * 0.9)
-    lines = textwrap.wrap(text, width=max_chars)
+    #sample = "A" * 10
+    #avg_char_width = (draw.textbbox((0, 0), sample, font=font)[2] - draw.textbbox((0, 0), sample, font=font)[0]) / 10
+    #max_chars = int(img.width / avg_char_width * 0.9)
+    #lines = textwrap.wrap(text, width=max_chars)
+
+    # 自动换行（更准确）
+    max_width = int(img.width * 0.9)
+    lines = wrap_text(draw, text, font, max_width)
 
     # 计算文字总高
     line_heights = [draw.textbbox((0, 0), line, font=font)[3] - draw.textbbox((0, 0), line, font=font)[1] for line in lines]
@@ -59,8 +85,14 @@ def generate_love_image(text):
 
     # 合成并保存
     final_image = Image.alpha_composite(img, txt_layer).convert("RGB")
+
+    # 保存到 backend/static/output 文件夹中（浏览器可访问）
+    static_output_folder = os.path.join(os.path.dirname(__file__), "static", "output")
+    os.makedirs(static_output_folder, exist_ok=True)
+
     filename = datetime.datetime.now().strftime("%Y%m%d%H%M%S") + "_loveletter.jpg"
-    output_path = os.path.join(output_folder, filename)
+    output_path = os.path.join(static_output_folder, filename)
     final_image.save(output_path)
 
-    return output_path
+    # 返回相对路径，供前端拼接访问地址
+    return f"/static/output/{filename}"

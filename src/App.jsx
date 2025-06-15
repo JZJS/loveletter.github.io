@@ -1,8 +1,9 @@
 import { useState } from "react";
-import chainlove from "E:/AI/zora-loveletter/image/chainlove.png";
+import chainlove from "../image/chainlove.png";
 import { createWalletClient, createPublicClient, custom, http } from 'viem';
 import { base } from 'viem/chains';
 import { createCoin } from '@zoralabs/coins-sdk';
+import {generateLoveImage} from "./generate.js";
 
 
 export default function App() {
@@ -25,20 +26,30 @@ export default function App() {
   const handleGenerate = async () => {
     const text = to ? `To ${to},\n${message}` : message;
 
-    try {
-      const response = await fetch("http://localhost:5000/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text })
-      });
+    // try {
+    //   const response = await fetch("http://localhost:5000/generate", {
+    //     method: "POST",
+    //     headers: { "Content-Type": "application/json" },
+    //     body: JSON.stringify({ text })
+    //   });
+    //
+    //   const result = await response.json();
+    //   if (result.success) {
+    //     setGeneratedImage(result.path);
+    //     setShowModal(true);
+    //   } else {
+    //     alert("❌ Failed to generate image");
+    //   }
+    // } catch (err) {
+    //   console.error(err);
+    //   alert("❌ Error generating image");
+    // }
 
-      const result = await response.json();
-      if (result.success) {
-        setGeneratedImage(result.path);
-        setShowModal(true);
-      } else {
-        alert("❌ Failed to generate image");
-      }
+    try {
+      const res = await generateLoveImage(text)
+      console.log(res.Hash)
+      setGeneratedImage("https://gateway.lighthouse.storage/ipfs/" + res.Hash);
+      setShowModal(true);
     } catch (err) {
       console.error(err);
       alert("❌ Error generating image");
@@ -105,7 +116,7 @@ export default function App() {
           name: 'Chain Love Coin',
           symbol: 'LOVE',
           //uri: 'https://bafybeibo6wwsmfc36rci22mu4psfizik3pabf7u34xnekycvpznvy273oy',
-          uri: 'https://gateway.lighthouse.storage/ipfs/bafkreietlntekiuys7qwfch2rafn3dfdu4cqbrjcbxwxh2b26haoojsuwe',
+          uri: generatedImage,
           payoutRecipient: address,
           platformReferrer: '0x0000000000000000000000000000000000000000',
           initialPurchaseWei: 0n
@@ -186,7 +197,7 @@ export default function App() {
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white p-6 rounded-2xl shadow-xl max-w-lg w-full text-center space-y-4">
               <h2 className="text-xl font-bold text-pink-700">Your Love Letter</h2>
-              <img src={`http://localhost:5000${generatedImage}`} alt="Generated Love Letter" className="mx-auto rounded-lg shadow" />
+              <img src={generatedImage} alt="Generated Love Letter" className="mx-auto rounded-lg shadow" />
               <div className="flex justify-center gap-4 mt-4">
                 <button
                   onClick={() => setShowModal(false)}

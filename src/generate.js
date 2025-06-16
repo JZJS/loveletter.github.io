@@ -33,8 +33,7 @@ const wrapText = (ctx, text, font, maxWidth) => {
 const generateLoveImage = async (text) => {
     console.log(text);
     const index = randomIntFromInterval(1, 13);
-    const backgroundPath = '../image/' + `loveletter${index}.jpg`;
-    const fontPath = '../Great_Vibes/' + 'GreatVibes-Regular.ttf';
+    const backgroundPath = '/assets/image/' + `loveletter${index}.jpg`;
 
     const img = await loadImage(backgroundPath);
     const canvas = createCanvas(img.width, img.height);
@@ -44,7 +43,7 @@ const generateLoveImage = async (text) => {
     ctx.drawImage(img, 0, 0);
 
     // 加载字体
-    const fontStyle = new FontFace('GreatVibes-Regular', "url('../Great_Vibes/GreatVibes-Regular.ttf')");
+    const fontStyle = new FontFace('GreatVibes-Regular', "url('/assets/font/Great_Vibes/GreatVibes-Regular.ttf')");
     document.fonts.add(fontStyle);
     await fontStyle.load();
     ctx.font = '500px GreatVibes-Regular';

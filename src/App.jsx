@@ -1,5 +1,5 @@
 import { useState } from "react";
-import chainlove from "../image/chainlove.png";
+import chainlove from "/assets/image/chainlove.png";
 import { createWalletClient, createPublicClient, custom, http } from 'viem';
 import { base } from 'viem/chains';
 import { createCoin } from '@zoralabs/coins-sdk';

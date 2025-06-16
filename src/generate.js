@@ -95,7 +95,7 @@ const generateLoveImage = async (text) => {
 
     const uploadUrl = 'https://node.lighthouse.storage/api/v0/add';
     const headers = {
-        Authorization: 'Bearer 4c193d3d.9c6b5826a8a248a989a338f685c5e4cb'
+        Authorization: `Bearer ${import.meta.env.VITE_LIGHTHOUSE_API_KEY}`
     };
 
     const uploadResponse = await fetch(uploadUrl, {
